@@ -55,8 +55,8 @@ drizzle/   Database schema and migrations
 **Requirements:** Node.js 20+, PostgreSQL 14+
 
 ```bash
-git clone https://github.com/CodeBuild-Dev/project-management.git
-cd project-management
+git clone https://github.com/CodeBuild-Dev/project-management-system.git
+cd project-management-system
 npm install
 
 cp .env.example .env    # then fill in the values (see below)
