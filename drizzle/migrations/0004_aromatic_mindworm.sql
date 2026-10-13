@@ -1,0 +1,1 @@
+ALTER TYPE "public"."notification_type" ADD VALUE 'comment_added' BEFORE 'due_soon';
