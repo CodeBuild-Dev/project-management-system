@@ -1,0 +1,45 @@
+{
+  "name": "@projectmgmt/server",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./src/trpc-types.ts",
+  "types": "./src/trpc-types.ts",
+  "exports": {
+    ".": "./src/trpc-types.ts"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc --noEmit",
+    "start": "npm run db:migrate -w @projectmgmt/drizzle && tsx src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sendgrid/mail": "^8.1.6",
+    "@projectmgmt/drizzle": "*",
+    "@projectmgmt/shared": "*",
+    "@trpc/server": "^11.0.0-rc.660",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.36.4",
+    "express": "^4.21.0",
+    "express-rate-limit": "^8.4.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "otplib": "^12.0.1",
+    "pg": "^8.13.1",
+    "superjson": "^2.2.6",
+    "tsx": "^4.19.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^22.16.5",
+    "@types/pg": "^8.11.10",
+    "typescript": "^5.8.3"
+  }
+}
