@@ -1,0 +1,32 @@
+{
+  "name": "project-management",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Project Management — freelance dashboard for clients, projects, time tracking, expenses and reports.",
+  "workspaces": [
+    "shared",
+    "drizzle",
+    "server",
+    "client"
+  ],
+  "//scripts-note": "npm 11 auto-forwards root script names to matching workspace scripts. To run per-workspace, use `npm run <script> -w @projectmgmt/<pkg>`. E.g.: `npm run dev -w @projectmgmt/server`.",
+  "scripts": {
+    "dev": "npm run dev -w @projectmgmt/client",
+    "dev:server": "npm run dev -w @projectmgmt/server",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint -w @projectmgmt/client",
+    "test": "npm run test -w @projectmgmt/client",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "start": "npm start -w @projectmgmt/server",
+    "db:migrate": "npm run db:migrate -w @projectmgmt/drizzle"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "drizzle-orm": "^0.36.4"
+  },
+  "dependencies": {
+    "superjson": "^2.2.6"
+  }
+}
