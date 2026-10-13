@@ -1,0 +1,26 @@
+# Nixpacks phase configuration for Railway.
+# The default install phase runs `npm ci` which skips devDependencies when
+# NPM_CONFIG_PRODUCTION=true (Railway auto-sets this when NODE_ENV=production).
+# We need devDeps (vite, tsc, ...) to run `npm run build`, so force them in.
+#
+# The committed package-lock.json is generated on Windows and only pins win32
+# variants of native deps (rollup, esbuild, swc). On Linux, `npm install`
+# preserves the bogus optional-dep state from the lockfile instead of fixing
+# it (npm bug https://github.com/npm/cli/issues/4828), so rollup crashes with
+# "Cannot find module @rollup/rollup-linux-x64-gnu" at build time.
+#
+# Workaround: delete package-lock.json before install so npm regenerates it
+# with the correct linux platform variants. Sacrifices reproducibility for
+# cross-platform safety; the Windows lockfile stays useful for local dev.
+#
+# The build phase only runs `npm run build` — running install twice triggers
+# EBUSY on the node_modules/.cache mount.
+
+[phases.install]
+cmds = ["rm -f package-lock.json && npm install --include=dev"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "npm start"

@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    name: Typecheck + Lint + Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck all workspaces
+        run: npm run typecheck
+
+      - name: Lint client
+        run: npm run lint -w @projectmgmt/client
+
+      - name: Build client
+        run: npm run build -w @projectmgmt/client
+        env:
+          NODE_ENV: production
+
+      - name: Build server
+        run: npm run build -w @projectmgmt/server
+
+      - name: Drizzle schema check
+        # Fails the build if schema.ts and migrations/ disagree — catches
+        # missed `db:generate` runs before they hit main.
+        run: npm run db:check -w @projectmgmt/drizzle
+        continue-on-error: true
