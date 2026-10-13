@@ -7,9 +7,7 @@ import { router } from '../trpc.js';
 import { authedDbProcedure } from '../procedures.js';
 import { resolveWorkspace } from '../../services/workspace-scope.js';
 import {
-  listActivitiesForBoard,
   listActivitiesForTask,
-  listActivitiesForWorkspace,
 } from '../../services/activity.js';
 
 async function workspaceIdForBoard(db: DbClient, boardId: string) {
@@ -46,28 +44,4 @@ export const activityRouter = router({
       return listActivitiesForTask(ctx.db, input.taskId, input.limit ?? 50);
     }),
 
-  listForBoard: authedDbProcedure
-    .input(
-      z.object({
-        boardId: z.string().uuid(),
-        limit: z.number().int().min(1).max(500).optional(),
-      })
-    )
-    .query(async ({ ctx, input }) => {
-      const wsId = await workspaceIdForBoard(ctx.db, input.boardId);
-      await resolveWorkspace(ctx.db, ctx.user, wsId);
-      return listActivitiesForBoard(ctx.db, input.boardId, input.limit ?? 100);
-    }),
-
-  listForWorkspace: authedDbProcedure
-    .input(
-      z.object({
-        workspaceId: z.string().uuid(),
-        limit: z.number().int().min(1).max(500).optional(),
-      })
-    )
-    .query(async ({ ctx, input }) => {
-      await resolveWorkspace(ctx.db, ctx.user, input.workspaceId);
-      return listActivitiesForWorkspace(ctx.db, input.workspaceId, input.limit ?? 100);
-    }),
 });

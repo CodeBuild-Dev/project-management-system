@@ -14,7 +14,7 @@ import type {
   UpdateTaskInput,
 } from '@projectmgmt/shared';
 import { AUDIT_ACTIONS } from '@projectmgmt/shared';
-import { writeAuditLog, writeAuditLogs, type AuditActor, type AuditWrite } from './audit.js';
+import { writeAuditLog, type AuditActor } from './audit.js';
 import { eventBus } from './event-bus.js';
 import {
   canDeleteTask,
@@ -99,17 +99,6 @@ export async function listTasksByBoard(
     .where(eq(tasks.boardId, boardId))
     .orderBy(asc(tasks.position), asc(tasks.createdAt));
   return rows.map(toTask);
-}
-
-export async function getTask(
-  db: DbClient,
-  actor: TaskServiceActor,
-  id: string
-): Promise<Task> {
-  const [row] = await db.select().from(tasks).where(eq(tasks.id, id)).limit(1);
-  if (!row) throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found.' });
-  await assertTaskAccess(db, actor, row.boardId);
-  return toTask(row);
 }
 
 export async function createTask(
@@ -285,71 +274,6 @@ export async function deleteTask(
     actor: { id: actor.id, email: actor.email },
   });
   return { ok: true };
-}
-
-/** Update a set of tasks with the same patch (used by the selection toolbar). */
-export async function bulkUpdateTasks(
-  db: DbClient,
-  actor: TaskServiceActor,
-  ids: string[],
-  patch: Pick<UpdateTaskInput, 'status' | 'priority' | 'assigneeId' | 'dueDate'>
-): Promise<{ count: number }> {
-  if (ids.length === 0) return { count: 0 };
-  requirePermission(actor, 'task', 'update');
-
-  const before = await db.select().from(tasks).where(inArray(tasks.id, ids));
-  if (before.length === 0) return { count: 0 };
-
-  // Ensure all targeted tasks belong to boards the caller can access — and
-  // pre-resolve workspace ids so the audit-log loop below doesn't run a
-  // SELECT per task (was N+1 against the `boards` table).
-  const boardIds = Array.from(new Set(before.map((t) => t.boardId)));
-  for (const bId of boardIds) {
-    await assertTaskAccess(db, actor, bId);
-  }
-  const boardWorkspaceRows = await db
-    .select({ id: boards.id, workspaceId: boards.workspaceId })
-    .from(boards)
-    .where(inArray(boards.id, boardIds));
-  const workspaceByBoard = new Map(
-    boardWorkspaceRows.map((r) => [r.id, r.workspaceId])
-  );
-
-  const now = new Date();
-  const setValues: Partial<TaskRow> = { updatedAt: now };
-  if (patch.status !== undefined) setValues.status = patch.status;
-  if (patch.priority !== undefined) setValues.priority = patch.priority;
-  if (patch.assigneeId !== undefined) setValues.assigneeId = patch.assigneeId;
-  if (patch.dueDate !== undefined) setValues.dueDate = patch.dueDate;
-
-  await db.update(tasks).set(setValues).where(inArray(tasks.id, ids));
-
-  const after = await db.select().from(tasks).where(inArray(tasks.id, ids));
-  const afterById = new Map(after.map((t) => [t.id, t]));
-
-  // Build all audit entries up front and write them in ONE multi-row INSERT
-  // rather than `before.length` sequential round-trips against audit_logs.
-  const auditEntries: AuditWrite[] = [];
-  for (const prev of before) {
-    const next = afterById.get(prev.id);
-    if (!next) continue;
-    auditEntries.push({
-      action: AUDIT_ACTIONS.TASK_UPDATE,
-      entityType: 'task',
-      entityId: prev.id,
-      workspaceId: workspaceByBoard.get(prev.boardId) ?? null,
-      previousValue: prev as unknown as Record<string, unknown>,
-      newValue: next as unknown as Record<string, unknown>,
-    });
-    eventBus.emit('task.updated', {
-      task: toTask(next),
-      previous: toTask(prev),
-      actor: { id: actor.id, email: actor.email },
-    });
-  }
-  await writeAuditLogs(db, actor, auditEntries);
-
-  return { count: after.length };
 }
 
 /** Reorder tasks within a single group. */

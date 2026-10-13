@@ -1,4 +1,4 @@
-import { and, desc, eq, or, SQL } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import type { DbClient } from '@projectmgmt/drizzle';
 import { activities } from '@projectmgmt/drizzle';
 import type { Activity, ActivityType } from '@projectmgmt/shared';
@@ -64,34 +64,6 @@ export async function listActivitiesForTask(
     .select()
     .from(activities)
     .where(eq(activities.taskId, taskId))
-    .orderBy(desc(activities.performedAt))
-    .limit(limit);
-  return rows.map(toActivity);
-}
-
-export async function listActivitiesForBoard(
-  db: DbClient,
-  boardId: string,
-  limit = 100
-): Promise<Activity[]> {
-  const rows = await db
-    .select()
-    .from(activities)
-    .where(eq(activities.boardId, boardId))
-    .orderBy(desc(activities.performedAt))
-    .limit(limit);
-  return rows.map(toActivity);
-}
-
-export async function listActivitiesForWorkspace(
-  db: DbClient,
-  workspaceId: string,
-  limit = 100
-): Promise<Activity[]> {
-  const rows = await db
-    .select()
-    .from(activities)
-    .where(eq(activities.workspaceId, workspaceId))
     .orderBy(desc(activities.performedAt))
     .limit(limit);
   return rows.map(toActivity);

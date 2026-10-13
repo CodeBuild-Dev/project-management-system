@@ -6,7 +6,6 @@ import {
   createExpense,
   deleteExpense,
   listExpensesByBoard,
-  updateExpense,
 } from '../../services/expense.js';
 
 const isoDate = z.union([z.string().datetime(), z.date()]);
@@ -26,20 +25,6 @@ const createInput = z.object({
   receiptUrl: z.string().url().max(2000).nullish(),
 });
 
-const updateInput = z.object({
-  id: z.string().uuid(),
-  data: z
-    .object({
-      amount: z.number().int().min(0).max(1_000_000_000_000).optional(),
-      currency: currencyCode.optional(),
-      category: z.string().trim().min(1).max(64).optional(),
-      incurredAt: isoDate.optional(),
-      note: z.string().trim().max(2000).nullish(),
-      billable: z.boolean().optional(),
-      receiptUrl: z.union([z.string().url().max(2000), z.null()]).optional(),
-    })
-    .refine((d) => Object.keys(d).length > 0, 'No fields to update'),
-});
 
 export const expenseRouter = router({
   listByBoard: authedDbProcedure
@@ -52,11 +37,6 @@ export const expenseRouter = router({
   create: authedDbProcedure.input(createInput).mutation(async ({ ctx, input }) => {
     const actor = makeActor(ctx.user, ctx);
     return createExpense(ctx.db, actor, input);
-  }),
-
-  update: authedDbProcedure.input(updateInput).mutation(async ({ ctx, input }) => {
-    const actor = makeActor(ctx.user, ctx);
-    return updateExpense(ctx.db, actor, input.id, input.data);
   }),
 
   delete: authedDbProcedure

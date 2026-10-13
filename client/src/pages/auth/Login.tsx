@@ -23,8 +23,6 @@ export default function Login() {
   const [remember, setRemember] = useState(true);
   const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [totpRequired, setTotpRequired] = useState(false);
-  const [totpCode, setTotpCode] = useState('');
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -58,24 +56,14 @@ export default function Login() {
 
     setBusy(true);
     try {
-      await login({
-        email: trimmedEmail,
-        password,
-        totpCode: totpRequired ? totpCode : undefined,
-      });
+      await login({ email: trimmedEmail, password });
       navigate(redirectTo, { replace: true });
     } catch (err) {
-      const message = (err as Error).message;
-      // Server signals 2FA by throwing UNAUTHORIZED with message "TOTP_REQUIRED".
-      if (message === 'TOTP_REQUIRED') {
-        setTotpRequired(true);
-      } else {
-        toast({
-          title: t('auth.login.errors.signInFailedTitle'),
-          description: message,
-          variant: 'destructive',
-        });
-      }
+      toast({
+        title: t('auth.login.errors.signInFailedTitle'),
+        description: (err as Error).message,
+        variant: 'destructive',
+      });
     } finally {
       setBusy(false);
     }
@@ -150,26 +138,6 @@ export default function Login() {
                   </button>
                 </div>
               </div>
-
-              {totpRequired && (
-                <div className="space-y-1.5 animate-fade-in-up">
-                  <Label htmlFor="totp" className="text-xs text-muted-foreground">
-                    {t('auth.login.twoFactorLabel')}
-                  </Label>
-                  <Input
-                    id="totp"
-                    inputMode="numeric"
-                    pattern="\d{6}"
-                    maxLength={6}
-                    value={totpCode}
-                    onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ''))}
-                    placeholder={t('auth.login.twoFactorPlaceholder')}
-                    autoComplete="one-time-code"
-                    autoFocus
-                    className={inputClass}
-                  />
-                </div>
-              )}
 
               <div className="pt-1 animate-fade-in-up delay-500">
                 <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer select-none">

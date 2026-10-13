@@ -65,21 +65,6 @@ export async function listClients(
   return rows.map(toClient);
 }
 
-export async function getClient(
-  db: DbClient,
-  actor: ClientServiceActor,
-  id: string
-): Promise<Client> {
-  requirePermission(actor, 'client', 'read');
-  const [row] = await db
-    .select()
-    .from(clients)
-    .where(eq(clients.id, id))
-    .limit(1);
-  if (!row) throw new TRPCError({ code: 'NOT_FOUND', message: 'Client not found.' });
-  return toClient(row);
-}
-
 export async function createClient(
   db: DbClient,
   actor: ClientServiceActor,

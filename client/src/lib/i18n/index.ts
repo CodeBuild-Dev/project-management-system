@@ -6,11 +6,8 @@ import de from './locales/de.json';
 
 /**
  * i18n bootstrap. JSON catalogs are loaded eagerly — small enough to bundle.
- * `projectmgmt.locale` in localStorage is the persistence key (set by the
- * detector); the LanguageSwitcher writes to it via i18n.changeLanguage.
- *
- * Default + fallback = English. New keys land in en.json first; de.json
- * mirrors them via machine translation (DeepL/GPT) for the first pass.
+ * The language is detected from the browser and remembered in localStorage
+ * under `projectmgmt.locale`. Default + fallback = English.
  */
 export const SUPPORTED_LANGUAGES = ['en', 'de'] as const;
 export type Language = (typeof SUPPORTED_LANGUAGES)[number];

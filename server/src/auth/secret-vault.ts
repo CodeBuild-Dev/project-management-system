@@ -54,17 +54,3 @@ export function sealSecret(plaintext: string): SealedSecret {
     tag: tag.toString('base64'),
   };
 }
-
-export function openSecret(sealed: SealedSecret): string {
-  const key = getKey();
-  const iv = Buffer.from(sealed.iv, 'base64');
-  const tag = Buffer.from(sealed.tag, 'base64');
-  const ciphertext = Buffer.from(sealed.ciphertext, 'base64');
-  const decipher = crypto.createDecipheriv(ALG, key, iv);
-  decipher.setAuthTag(tag);
-  const decrypted = Buffer.concat([
-    decipher.update(ciphertext),
-    decipher.final(),
-  ]);
-  return decrypted.toString('utf8');
-}

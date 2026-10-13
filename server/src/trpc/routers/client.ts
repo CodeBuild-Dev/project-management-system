@@ -5,7 +5,6 @@ import { makeActor } from '../actor.js';
 import {
   createClient,
   deleteClient,
-  getClient,
   listClients,
   updateClient,
 } from '../../services/client.js';
@@ -77,13 +76,6 @@ export const clientRouter = router({
     .query(async ({ ctx, input }) => {
       const actor = makeActor(ctx.user, ctx);
       return listClients(ctx.db, actor, input ?? {});
-    }),
-
-  getById: authedDbProcedure
-    .input(z.object({ id: z.string().uuid() }))
-    .query(async ({ ctx, input }) => {
-      const actor = makeActor(ctx.user, ctx);
-      return getClient(ctx.db, actor, input.id);
     }),
 
   create: authedDbProcedure.input(createInput).mutation(async ({ ctx, input }) => {

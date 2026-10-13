@@ -4,15 +4,11 @@ import { authedDbProcedure } from '../procedures.js';
 import { makeActor } from '../actor.js';
 import {
   listWorkspaces,
-  getWorkspace,
   createWorkspace,
   updateWorkspace,
   deleteWorkspace,
-  reorderWorkspaces,
-  adminListWorkspaces,
 } from '../../services/workspace.js';
 import { resolveWorkspace } from '../../services/workspace-scope.js';
-import { hasPermission } from '../../services/permissions.js';
 import { visibilityEnum } from './shared.js';
 
 const createInput = z.object({
@@ -41,20 +37,6 @@ export const workspaceRouter = router({
     return listWorkspaces(ctx.db, actor);
   }),
 
-  /** Returns every workspace; gated by `workspace:listAll`. */
-  adminList: authedDbProcedure.query(async ({ ctx }) => {
-    const actor = makeActor(ctx.user, ctx);
-    if (!hasPermission(actor, 'workspace', 'listAll')) return [];
-    return adminListWorkspaces(ctx.db);
-  }),
-
-  getById: authedDbProcedure
-    .input(z.object({ id: z.string().uuid() }))
-    .query(async ({ ctx, input }) => {
-      const actor = makeActor(ctx.user, ctx);
-      return getWorkspace(ctx.db, actor, input.id);
-    }),
-
   create: authedDbProcedure.input(createInput).mutation(async ({ ctx, input }) => {
     const actor = makeActor(ctx.user, ctx);
     return createWorkspace(ctx.db, actor, input);
@@ -74,10 +56,4 @@ export const workspaceRouter = router({
       return deleteWorkspace(ctx.db, actor, input.id);
     }),
 
-  reorder: authedDbProcedure
-    .input(z.object({ orderedIds: z.array(z.string().uuid()) }))
-    .mutation(async ({ ctx, input }) => {
-      const actor = makeActor(ctx.user, ctx);
-      return reorderWorkspaces(ctx.db, actor, input.orderedIds);
-    }),
 });

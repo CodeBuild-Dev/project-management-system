@@ -1,6 +1,6 @@
 import { eq, inArray } from 'drizzle-orm';
 import type { DbClient } from '@projectmgmt/drizzle';
-import { boards, tasks, workspaceMembers } from '@projectmgmt/drizzle';
+import { boards } from '@projectmgmt/drizzle';
 import { eventBus } from './event-bus.js';
 import { recordActivity } from './activity.js';
 import { createNotifications } from './notification.js';

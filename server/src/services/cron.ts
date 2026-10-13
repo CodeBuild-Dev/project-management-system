@@ -118,7 +118,6 @@ async function tick(db: DbClient) {
 }
 
 let timer: NodeJS.Timeout | null = null;
-let automationTimer: NodeJS.Timeout | null = null;
 
 /**
  * Daily pass for time-based automation triggers (due_today, overdue).
@@ -154,5 +153,5 @@ export function startNotificationCron(db: DbClient): void {
 
   // Automation pass runs less often (every 24h) — see automationTick comment.
   setTimeout(() => void automationTick(db), 10_000);
-  automationTimer = setInterval(() => void automationTick(db), DAY_MS);
+  setInterval(() => void automationTick(db), DAY_MS);
 }

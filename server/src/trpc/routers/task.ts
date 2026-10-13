@@ -8,11 +8,9 @@ import { authedDbProcedure } from '../procedures.js';
 import { makeActor } from '../actor.js';
 import {
   listTasksByBoard,
-  getTask,
   createTask,
   updateTask,
   deleteTask,
-  bulkUpdateTasks,
   reorderTasksInGroup,
 } from '../../services/task.js';
 import { resolveWorkspace } from '../../services/workspace-scope.js';
@@ -88,17 +86,6 @@ const updateInput = z.object({
     .refine((d) => Object.keys(d).length > 0, 'No fields to update'),
 });
 
-const bulkInput = z.object({
-  ids: z.array(z.string().uuid()).min(1).max(500),
-  patch: z
-    .object({
-      status: optionId.optional(),
-      priority: optionId.optional(),
-      assigneeId: z.string().uuid().nullable().optional(),
-      dueDate: nullableDateOptional,
-    })
-    .refine((d) => Object.keys(d).length > 0, 'Nothing to update'),
-});
 
 export const taskRouter = router({
   listByBoard: authedDbProcedure
@@ -108,15 +95,6 @@ export const taskRouter = router({
       await resolveWorkspace(ctx.db, ctx.user, wsId);
       const actor = makeActor(ctx.user, ctx);
       return listTasksByBoard(ctx.db, actor, input.boardId);
-    }),
-
-  getById: authedDbProcedure
-    .input(z.object({ id: z.string().uuid() }))
-    .query(async ({ ctx, input }) => {
-      const wsId = await workspaceIdForTask(ctx.db, input.id);
-      await resolveWorkspace(ctx.db, ctx.user, wsId);
-      const actor = makeActor(ctx.user, ctx);
-      return getTask(ctx.db, actor, input.id);
     }),
 
   create: authedDbProcedure.input(createInput).mutation(async ({ ctx, input }) => {
@@ -141,16 +119,6 @@ export const taskRouter = router({
       const actor = makeActor(ctx.user, ctx);
       return deleteTask(ctx.db, actor, input.id);
     }),
-
-  bulkUpdate: authedDbProcedure.input(bulkInput).mutation(async ({ ctx, input }) => {
-    // Per-task permission is checked inside the service via board lookup; we
-    // pre-resolve membership against the first task's workspace so callers
-    // that aren't members fail fast.
-    const wsId = await workspaceIdForTask(ctx.db, input.ids[0]);
-    await resolveWorkspace(ctx.db, ctx.user, wsId);
-    const actor = makeActor(ctx.user, ctx);
-    return bulkUpdateTasks(ctx.db, actor, input.ids, input.patch);
-  }),
 
   reorderInGroup: authedDbProcedure
     .input(

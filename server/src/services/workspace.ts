@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server';
-import { and, asc, desc, eq, inArray, isNull, max, sql } from 'drizzle-orm';
+import { and, asc, eq, isNull, max } from 'drizzle-orm';
 import type { DbClient } from '@projectmgmt/drizzle';
 import {
   workspaces,
@@ -71,40 +71,6 @@ export async function listWorkspaces(
     )
     .orderBy(asc(workspaces.position), asc(workspaces.createdAt));
   return rows.map((r) => toWorkspace(r.w));
-}
-
-export async function getWorkspace(
-  db: DbClient,
-  actor: WorkspaceServiceActor,
-  id: string
-): Promise<Workspace> {
-  const [row] = await db
-    .select()
-    .from(workspaces)
-    .where(eq(workspaces.id, id))
-    .limit(1);
-  if (!row) throw new TRPCError({ code: 'NOT_FOUND', message: 'Workspace not found.' });
-
-  if (!hasPermission(actor, 'workspace', 'listAll')) {
-    const [member] = await db
-      .select({ id: workspaceMembers.userId })
-      .from(workspaceMembers)
-      .where(
-        and(
-          eq(workspaceMembers.workspaceId, id),
-          eq(workspaceMembers.userId, actor.id)
-        )
-      )
-      .limit(1);
-    if (!member) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'You are not a member of this workspace.',
-      });
-    }
-  }
-
-  return toWorkspace(row);
 }
 
 /**
@@ -243,64 +209,4 @@ export async function deleteWorkspace(
     actor: { id: actor.id, email: actor.email },
   });
   return { ok: true };
-}
-
-/**
- * Bulk reorder by passing ordered ids. Only workspaces the caller can update
- * are moved — for non-bypass roles that means: must be a member of the
- * workspace AND must hold the `workspace:update` permission.
- */
-export async function reorderWorkspaces(
-  db: DbClient,
-  actor: WorkspaceServiceActor,
-  orderedIds: string[]
-): Promise<{ ok: true }> {
-  const seesAll = hasPermission(actor, 'workspace', 'listAll');
-  const canUpdate = hasPermission(actor, 'workspace', 'update');
-  if (!canUpdate) return { ok: true };
-  if (orderedIds.length === 0) return { ok: true };
-
-  // For non-listAll users, fetch the subset of `orderedIds` they're a
-  // member of in one query instead of N membership lookups in a loop.
-  let allowedIds: string[] = orderedIds;
-  if (!seesAll) {
-    const memberRows = await db
-      .select({ workspaceId: workspaceMembers.workspaceId })
-      .from(workspaceMembers)
-      .where(
-        and(
-          eq(workspaceMembers.userId, actor.id),
-          inArray(workspaceMembers.workspaceId, orderedIds)
-        )
-      );
-    const memberSet = new Set(memberRows.map((r) => r.workspaceId));
-    allowedIds = orderedIds.filter((id) => memberSet.has(id));
-    if (allowedIds.length === 0) return { ok: true };
-  }
-
-  // Single CASE-based UPDATE: each row's new position comes from its index
-  // in the original `orderedIds` array (so removed-by-permission ids still
-  // reserve their slot — this matches the previous loop's behaviour).
-  const cases = orderedIds.map((id, i) =>
-    sql`WHEN ${workspaces.id} = ${id} THEN ${i}`
-  );
-  await db
-    .update(workspaces)
-    .set({
-      position: sql`CASE ${sql.join(cases, sql` `)} ELSE ${workspaces.position} END`,
-      updatedAt: new Date(),
-    })
-    .where(inArray(workspaces.id, allowedIds));
-  return { ok: true };
-}
-
-/** Used by the Admin panel — full list without workspace-membership filtering. */
-export async function adminListWorkspaces(
-  db: DbClient
-): Promise<Workspace[]> {
-  const rows = await db
-    .select()
-    .from(workspaces)
-    .orderBy(desc(workspaces.createdAt));
-  return rows.map(toWorkspace);
 }

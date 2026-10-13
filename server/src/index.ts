@@ -74,9 +74,6 @@ app.use(express.json({ limit: '1mb' }));
 
 // Rate limit the auth endpoints + all writes. SSE streams (GET) are untouched.
 app.use('/api/trpc/auth.login', authLimiter);
-app.use('/api/trpc/auth.register', authLimiter);
-app.use('/api/trpc/auth.requestPasswordReset', authLimiter);
-app.use('/api/trpc/auth.completePasswordReset', authLimiter);
 app.use('/api/trpc', writeLimiter);
 
 // --- API routes ---

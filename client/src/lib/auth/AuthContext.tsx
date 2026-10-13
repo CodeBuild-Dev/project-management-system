@@ -46,8 +46,6 @@ export interface AuthUser {
 export interface LoginInput {
   email: string;
   password: string;
-  /** Required when the account has 2FA enabled. */
-  totpCode?: string;
 }
 
 interface AuthContextValue {
@@ -169,12 +167,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<AuthContextValue>(() => {
-    const login: AuthContextValue['login'] = async ({ email, password, totpCode }) => {
+    const login: AuthContextValue['login'] = async ({ email, password }) => {
       if (!email.includes('@')) throw new Error('Invalid email');
       if (password.length < 1) throw new Error('Password required');
       // Server sets the HttpOnly auth cookie in the response; the JSON
       // body just carries the user record so we can warm local state.
-      const result = await loginMutation.mutateAsync({ email, password, totpCode });
+      const result = await loginMutation.mutateAsync({ email, password });
       setUser(toAuthUser(result.user));
       queryClient.setQueryData([['auth', 'me']], result.user);
     };

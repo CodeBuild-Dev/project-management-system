@@ -20,13 +20,13 @@ A full-stack project management app for freelancers: track clients, projects, ta
 - Project lifecycle: proposal → active → invoiced → paid
 - **Time tracking** with a running timer, plus **expenses** and per-project budgets
 - **Reports**: 12-month earnings chart, top clients by revenue, outstanding (invoiced but unpaid) and active projects
-- **Credentials vault**: store project logins encrypted with AES-256-GCM
+- Save project logins when creating a project, encrypted at rest with AES-256-GCM
 
 **Platform**
-- Email/password login with JWT in an `httpOnly` cookie; two-factor (TOTP) support in the API
-- Role-based permissions; only admins can create accounts
-- Password reset and notification emails via SendGrid (optional)
-- English / German UI
+- Single-owner app: the owner account is created from environment variables on first start
+- Email/password login with JWT in an `httpOnly` cookie
+- Role-based permission checks on every API call
+- Optional email (SendGrid) for the automations' "send email" action
 - Security headers (Helmet) and per-IP rate limiting
 
 ---
@@ -37,7 +37,7 @@ A full-stack project management app for freelancers: track clients, projects, ta
 |----------|------------|
 | Frontend | React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui, TanStack Query, Recharts, i18next |
 | API      | tRPC on Express, Zod validation, Server-Sent Events |
-| Auth     | JWT, bcrypt, TOTP (otplib) |
+| Auth     | JWT, bcrypt |
 | Database | PostgreSQL with Drizzle ORM and versioned SQL migrations |
 | Tooling  | npm workspaces (monorepo), ESLint, GitHub Actions CI |
 
@@ -76,7 +76,7 @@ Sign in at http://localhost:8080 with the `SUPER_ADMIN_EMAIL` and `SUPER_ADMIN_P
 | `JWT_SECRET` | Yes | Signs login sessions (16+ random characters) |
 | `SUPER_ADMIN_EMAIL`, `SUPER_ADMIN_PASSWORD` | Yes | Owner account (password 8+ characters) |
 | `RESOURCE_VAULT_KEY` | For the vault | 32-byte base64 key: `openssl rand -base64 32` |
-| `SENDGRID_API_KEY`, `MAIL_FROM` | Optional | Password reset and notification emails |
+| `SENDGRID_API_KEY`, `MAIL_FROM` | Optional | Emails sent by the automations' "send email" action |
 | `FRONTEND_URL` | Optional | Allowed CORS origin (default `http://localhost:8080`) |
 
 See [.env.example](./.env.example). Never commit your `.env` file.

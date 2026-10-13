@@ -10,8 +10,6 @@ import { membershipRouter } from './routers/membership.js';
 import { userRouter } from './routers/user.js';
 import { activityRouter } from './routers/activity.js';
 import { notificationRouter } from './routers/notification.js';
-import { searchRouter } from './routers/search.js';
-import { systemRouter } from './routers/system.js';
 import { automationRouter } from './routers/automation.js';
 import { clientRouter } from './routers/client.js';
 import { timeEntryRouter } from './routers/time-entry.js';
@@ -35,8 +33,6 @@ export const appRouter = router({
   user: userRouter,
   activity: activityRouter,
   notification: notificationRouter,
-  search: searchRouter,
-  system: systemRouter,
   automation: automationRouter,
   /** Plural namespace — `client` collides with a tRPC-internal property on the root router. */
   clients: clientRouter,

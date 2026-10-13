@@ -5,7 +5,6 @@ import { expenses, type ExpenseRow } from '@projectmgmt/drizzle';
 import type {
   CreateExpenseInput,
   Expense,
-  UpdateExpenseInput,
 } from '@projectmgmt/shared';
 import { AUDIT_ACTIONS } from '@projectmgmt/shared';
 import { writeAuditLog, type AuditActor } from './audit.js';
@@ -94,62 +93,6 @@ export async function createExpense(
   const result = toExpense(inserted);
   eventBus.emit('expense.created', {
     expense: result,
-    actor: { id: actor.id, email: actor.email },
-  });
-  return result;
-}
-
-export async function updateExpense(
-  db: DbClient,
-  actor: ExpenseActor,
-  id: string,
-  input: UpdateExpenseInput
-): Promise<Expense> {
-  requirePermission(actor, 'expense', 'update');
-  const [previous] = await db
-    .select()
-    .from(expenses)
-    .where(eq(expenses.id, id))
-    .limit(1);
-  if (!previous) {
-    throw new TRPCError({ code: 'NOT_FOUND', message: 'Expense not found.' });
-  }
-
-  const patch: Partial<ExpenseRow> = { updatedAt: new Date() };
-  if (input.amount !== undefined) {
-    if (input.amount < 0) {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: 'Expense amount must be non-negative.',
-      });
-    }
-    patch.amount = input.amount;
-  }
-  if (input.currency !== undefined) patch.currency = input.currency.toUpperCase();
-  if (input.category !== undefined) patch.category = input.category;
-  if (input.incurredAt !== undefined) patch.incurredAt = toDate(input.incurredAt);
-  if (input.note !== undefined) patch.note = input.note;
-  if (input.billable !== undefined) patch.billable = input.billable;
-  if (input.receiptUrl !== undefined) patch.receiptUrl = input.receiptUrl;
-
-  const [updated] = await db
-    .update(expenses)
-    .set(patch)
-    .where(eq(expenses.id, id))
-    .returning();
-
-  await writeAuditLog(db, actor, {
-    action: AUDIT_ACTIONS.EXPENSE_UPDATE,
-    entityType: 'expense',
-    entityId: id,
-    previousValue: previous as unknown as Record<string, unknown>,
-    newValue: updated as unknown as Record<string, unknown>,
-  });
-
-  const result = toExpense(updated);
-  eventBus.emit('expense.updated', {
-    expense: result,
-    previous: toExpense(previous),
     actor: { id: actor.id, email: actor.email },
   });
   return result;

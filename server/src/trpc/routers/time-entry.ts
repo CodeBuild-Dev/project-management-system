@@ -6,7 +6,6 @@ import {
   createTimeEntry,
   deleteTimeEntry,
   getActiveTimer,
-  listTimeEntriesByBoard,
   listTimeEntriesByTask,
   startTimer,
   stopTimer,
@@ -46,20 +45,6 @@ export const timeEntryRouter = router({
     .query(async ({ ctx, input }) => {
       const actor = makeActor(ctx.user, ctx);
       return listTimeEntriesByTask(ctx.db, actor, input.taskId);
-    }),
-
-  listByBoard: authedDbProcedure
-    .input(
-      z.object({
-        boardId: z.string().uuid(),
-        billableOnly: z.boolean().optional(),
-      })
-    )
-    .query(async ({ ctx, input }) => {
-      const actor = makeActor(ctx.user, ctx);
-      return listTimeEntriesByBoard(ctx.db, actor, input.boardId, {
-        billableOnly: input.billableOnly,
-      });
     }),
 
   active: authedDbProcedure.query(async ({ ctx }) => {

@@ -89,24 +89,6 @@ export async function listTimeEntriesByTask(
   return rows.map(toTimeEntry);
 }
 
-export async function listTimeEntriesByBoard(
-  db: DbClient,
-  actor: TimeEntryActor,
-  boardId: string,
-  opts: { billableOnly?: boolean } = {}
-): Promise<TimeEntry[]> {
-  requirePermission(actor, 'time_entry', 'read');
-  const conditions = [eq(tasks.boardId, boardId)];
-  if (opts.billableOnly) conditions.push(eq(timeEntries.billable, true));
-  const rows = await db
-    .select({ entry: timeEntries })
-    .from(timeEntries)
-    .innerJoin(tasks, eq(tasks.id, timeEntries.taskId))
-    .where(and(...conditions))
-    .orderBy(desc(timeEntries.startedAt));
-  return rows.map((r) => toTimeEntry(r.entry));
-}
-
 export async function getActiveTimer(
   db: DbClient,
   actor: TimeEntryActor

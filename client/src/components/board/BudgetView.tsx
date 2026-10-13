@@ -300,7 +300,6 @@ export function BudgetView({ boardId }: BudgetViewProps) {
   }
 
   const loggedHours = summary.loggedMinutes / 60;
-  const billableHours = summary.billableMinutes / 60;
   const budgetHoursTarget = summary.budgetMinutes !== null ? summary.budgetMinutes / 60 : null;
   const hoursPct =
     budgetHoursTarget && budgetHoursTarget > 0

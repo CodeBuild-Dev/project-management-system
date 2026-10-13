@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server';
-import { desc, eq, ilike, or, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import type { DbClient } from '@projectmgmt/drizzle';
 import { users, type UserRow } from '@projectmgmt/drizzle';
 import type { PublicUser, UpdateUserInput } from '@projectmgmt/shared';
@@ -87,56 +87,6 @@ export interface ListUsersOptions {
 export interface PaginatedUsers {
   users: PublicUser[];
   nextCursor: string | null;
-}
-
-export async function listAllUsers(
-  db: DbClient,
-  opts: ListUsersOptions = {}
-): Promise<PaginatedUsers> {
-  const limit = Math.max(1, Math.min(100, opts.limit ?? 50));
-  const conditions = [] as ReturnType<typeof eq>[];
-  // Hide soft-deleted (tombstoned) accounts. deleteUser() rewrites the
-  // email to `deleted-{id}@deleted.local`; everything else stays so FK
-  // references in audit/activity history don't dangle.
-  conditions.push(sql`${users.email} NOT LIKE 'deleted-%@deleted.local'` as never);
-  if (opts.search && opts.search.trim()) {
-    const pattern = `%${opts.search.trim()}%`;
-    conditions.push(
-      or(
-        ilike(users.firstName, pattern),
-        ilike(users.lastName, pattern),
-        ilike(users.email, pattern),
-        sql`concat(${users.firstName}, ' ', ${users.lastName}) ILIKE ${pattern}`
-      )!
-    );
-  }
-  if (opts.cursor) {
-    const cursorDate = new Date(opts.cursor);
-    if (!isNaN(cursorDate.getTime())) {
-      // descending by createdAt → next page = createdAt < cursor.
-      conditions.push(sql`${users.createdAt} < ${cursorDate}` as never);
-    }
-  }
-
-  const where = conditions.length === 0 ? undefined : conditions.length === 1 ? conditions[0] : sql`${conditions.reduce((acc, c, i) => i === 0 ? c : sql`${acc} AND ${c}`, conditions[0])}`;
-
-  const rows = await db
-    .select(PUBLIC_USER_COLUMNS)
-    .from(users)
-    .where(where as never)
-    .orderBy(desc(users.createdAt))
-    .limit(limit + 1); // fetch one extra to know if there's a next page
-
-  const hasMore = rows.length > limit;
-  const page = hasMore ? rows.slice(0, limit) : rows;
-  const nextCursor = hasMore
-    ? (page[page.length - 1].createdAt as Date).toISOString()
-    : null;
-
-  return {
-    users: page.map(rowToPublicUser),
-    nextCursor,
-  };
 }
 
 export async function getUser(db: DbClient, id: string): Promise<PublicUser> {

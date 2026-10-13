@@ -13,11 +13,10 @@ import { TaskDetailPanel } from './TaskDetailPanel';
 import { AutomationsDialog } from './AutomationsDialog';
 import { useWorkspaces } from '@/lib/workspaces/WorkspaceContext';
 import { useAuth } from '@/lib/auth/AuthContext';
-import { Star, Filter, Search, Plus, Check, X } from 'lucide-react';
+import { Star, Filter, Search, Plus, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from '@/hooks/use-toast';
-import { PersonAvatar } from './PersonAvatar';
 import { BulkUpdateWizard } from '@/components/wizard/BulkUpdateWizard';
 import { OutcomeWizard } from '@/components/wizard/OutcomeWizard';
 import { EmptyState } from '@/components/EmptyState';
@@ -50,26 +49,6 @@ function tailwindClassToHsl(c: string): string {
   return match ? `hsl(var(--status-${match[1]}))` : c;
 }
 
-function ToolbarButton({
-  icon: Icon,
-  label,
-  onClick,
-}: {
-  icon: typeof Filter;
-  label: string;
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground px-2 py-1.5 rounded-md hover:bg-muted transition-colors"
-      title={label}
-    >
-      <Icon className="w-3.5 h-3.5" />
-      {label}
-    </button>
-  );
-}
 
 /**
  * Toolbar trigger used as a Popover trigger. Uses forwardRef via the
@@ -99,30 +78,6 @@ const ToolbarTrigger = forwardRef<
 ));
 ToolbarTrigger.displayName = 'ToolbarTrigger';
 
-function PersonFilterItem({
-  label,
-  checked,
-  onToggle,
-  avatar,
-}: {
-  label: string;
-  checked: boolean;
-  onToggle: () => void;
-  avatar: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onToggle}
-      className={`w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded-sm ${
-        checked ? 'bg-primary/10' : 'hover:bg-muted'
-      }`}
-    >
-      {avatar}
-      <span className="flex-1 text-left truncate">{label}</span>
-      {checked && <Check className="w-3.5 h-3.5 text-primary" />}
-    </button>
-  );
-}
 
 function FilterChip({
   label,
@@ -147,12 +102,6 @@ function FilterChip({
   );
 }
 
-function togglePersonId(prev: Set<string>, id: string): Set<string> {
-  const next = new Set(prev);
-  if (next.has(id)) next.delete(id);
-  else next.add(id);
-  return next;
-}
 
 function toggleSetItem<T>(prev: Set<T>, item: T): Set<T> {
   const next = new Set(prev);
@@ -224,12 +173,12 @@ export function BoardView({ board, workspaceId, taskIdFromUrl, onBoardChange }: 
 
   // Toolbar state
   const [filterStatuses, setFilterStatuses] = useState<Set<StatusType>>(new Set());
-  const [filterPriorities, setFilterPriorities] = useState<Set<PriorityType>>(new Set());
-  const [filterAssignees, setFilterAssignees] = useState<Set<string>>(new Set());
-  const [filterTags, setFilterTags] = useState<Set<string>>(new Set());
-  const [sortBy, setSortBy] = useState<{ field: SortField; dir: SortDir } | null>(null);
-  const [hiddenColumnIds, setHiddenColumnIds] = useState<Set<string>>(new Set());
-  const [groupBy, setGroupBy] = useState<GroupByKind>('default');
+  const [filterPriorities] = useState<Set<PriorityType>>(new Set());
+  const [filterAssignees] = useState<Set<string>>(new Set());
+  const [filterTags] = useState<Set<string>>(new Set());
+  const [sortBy] = useState<{ field: SortField; dir: SortDir } | null>(null);
+  const [hiddenColumnIds] = useState<Set<string>>(new Set());
+  const [groupBy] = useState<GroupByKind>('default');
   const [automationsOpen, setAutomationsOpen] = useState(false);
 
   // Drawer state — driven entirely by the URL so deep-links (`/.../tasks/:id`)
