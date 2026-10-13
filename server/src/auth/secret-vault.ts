@@ -68,12 +68,3 @@ export function openSecret(sealed: SealedSecret): string {
   ]);
   return decrypted.toString('utf8');
 }
-
-export function isVaultConfigured(): boolean {
-  try {
-    getKey();
-    return true;
-  } catch {
-    return false;
-  }
-}

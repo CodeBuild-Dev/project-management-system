@@ -156,14 +156,3 @@ export function startNotificationCron(db: DbClient): void {
   setTimeout(() => void automationTick(db), 10_000);
   automationTimer = setInterval(() => void automationTick(db), DAY_MS);
 }
-
-export function stopNotificationCron(): void {
-  if (timer) {
-    clearInterval(timer);
-    timer = null;
-  }
-  if (automationTimer) {
-    clearInterval(automationTimer);
-    automationTimer = null;
-  }
-}

@@ -98,9 +98,6 @@ export async function bootstrapOwner(db: DbClient): Promise<void> {
   }
 }
 
-/** @deprecated Use {@link bootstrapOwner}. Kept as an alias to avoid breaking existing callers. */
-export const bootstrapSuperAdmin = bootstrapOwner;
-
 /**
  * Ensure the Owner has a default workspace. Solo mode removed the "Create
  * workspace" UI; without this, a fresh Owner sees an empty-state with no

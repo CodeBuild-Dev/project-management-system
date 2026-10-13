@@ -15,11 +15,6 @@ import de from './locales/de.json';
 export const SUPPORTED_LANGUAGES = ['en', 'de'] as const;
 export type Language = (typeof SUPPORTED_LANGUAGES)[number];
 
-export const LANGUAGE_LABELS: Record<Language, string> = {
-  en: 'English',
-  de: 'Deutsch',
-};
-
 void i18n
   .use(LanguageDetector)
   .use(initReactI18next)

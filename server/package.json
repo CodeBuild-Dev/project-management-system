@@ -15,9 +15,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@sendgrid/mail": "^8.1.6",
     "@projectmgmt/drizzle": "*",
     "@projectmgmt/shared": "*",
+    "@sendgrid/mail": "^8.1.6",
     "@trpc/server": "^11.0.0-rc.660",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",

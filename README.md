@@ -14,7 +14,6 @@ A full-stack project management app for freelancers: track clients, projects, ta
 - Task detail panel with comments, `@mentions` and an activity history
 - **Automations**: "when X happens, do Y" rules (e.g. status changed, task created, due date reached)
 - Due-soon / overdue notifications and **live updates** across open tabs (Server-Sent Events)
-- Global search across projects and tasks
 
 **Freelance business**
 - **Clients** with contact details, country, source, currency and default hourly rate

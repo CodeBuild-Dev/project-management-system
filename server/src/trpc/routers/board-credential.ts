@@ -18,8 +18,6 @@ const credentialDraft = z.object({
   password: z.string().min(1).max(2000),
 });
 
-export const boardCredentialDraftSchema = credentialDraft;
-
 const createInput = credentialDraft.extend({
   boardId: z.string().uuid(),
 });

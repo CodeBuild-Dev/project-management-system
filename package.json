@@ -22,11 +22,5 @@
   },
   "engines": {
     "node": ">=20"
-  },
-  "devDependencies": {
-    "drizzle-orm": "^0.36.4"
-  },
-  "dependencies": {
-    "superjson": "^2.2.6"
   }
 }

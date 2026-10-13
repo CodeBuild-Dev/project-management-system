@@ -24,12 +24,3 @@ export function redactUserFields<T extends Record<string, unknown>>(
   }
   return out;
 }
-
-/** Mask an email for surfaces where we don't want full enumeration. */
-export function maskEmail(email: string): string {
-  const at = email.indexOf('@');
-  if (at <= 1) return '*@' + email.slice(at + 1);
-  const head = email.slice(0, 1);
-  const tail = email.slice(at);
-  return `${head}***${tail}`;
-}

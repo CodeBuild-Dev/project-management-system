@@ -282,11 +282,5 @@ export async function deleteUser(
   });
 }
 
-/**
- * Postgres LIKE pattern that matches the tombstone email assigned by
- * deleteUser(). Use it to exclude soft-deleted rows from listings.
- */
-export const DELETED_USER_EMAIL_PATTERN = 'deleted-%@deleted.local';
-
 /** Re-export so callers can centralise their owner-protection checks. */
 export { isOwnerProtected };

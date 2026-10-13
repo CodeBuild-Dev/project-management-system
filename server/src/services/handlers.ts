@@ -407,25 +407,5 @@ export function registerDomainHandlers(db: DbClient): void {
   });
 }
 
-// Helper used by some handlers to look up a task's workspace.
-export async function _workspaceIdForTask(db: DbClient, taskId: string) {
-  const [t] = await db.select({ boardId: tasks.boardId }).from(tasks).where(eq(tasks.id, taskId)).limit(1);
-  if (!t) return null;
-  const [b] = await db
-    .select({ workspaceId: boards.workspaceId })
-    .from(boards)
-    .where(eq(boards.id, t.boardId))
-    .limit(1);
-  return b?.workspaceId ?? null;
-}
-
-// Helper to find all members of a workspace — used by broadcast-style notifications (e.g. board.created).
-export async function _membersOfWorkspace(db: DbClient, workspaceId: string) {
-  return db
-    .select({ userId: workspaceMembers.userId })
-    .from(workspaceMembers)
-    .where(eq(workspaceMembers.workspaceId, workspaceId));
-}
-
 // Suppress unused-import warnings — `inArray` is kept available for future handlers.
 void inArray;

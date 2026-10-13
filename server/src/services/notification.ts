@@ -31,14 +31,6 @@ export interface CreateNotificationInput {
   message: string;
 }
 
-export async function createNotification(
-  db: DbClient,
-  input: CreateNotificationInput
-): Promise<Notification> {
-  const [row] = await db.insert(notifications).values(input).returning();
-  return toNotification(row);
-}
-
 export async function createNotifications(
   db: DbClient,
   inputs: CreateNotificationInput[]

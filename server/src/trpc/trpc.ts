@@ -50,19 +50,6 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
 });
 
 /**
- * Super-admin only. Used by the Admin panel procedures (Sprint 1+).
- */
-export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
-  if (ctx.user.role !== 'super_admin') {
-    throw new TRPCError({
-      code: 'FORBIDDEN',
-      message: 'Super-admin only.',
-    });
-  }
-  return next();
-});
-
-/**
  * Requires a live DB connection. Fails loudly if DATABASE_URL isn't set.
  */
 export const dbProcedure = publicProcedure.use(({ ctx, next }) => {

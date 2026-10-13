@@ -60,20 +60,3 @@ export async function resolveWorkspace(
 
   return { workspaceId };
 }
-
-/**
- * List all workspace IDs the actor is a member of. Owner and Super Admin see
- * everything (returned as the literal 'all' so callers can short-circuit).
- */
-export async function listUserWorkspaceIds(
-  db: DbClient,
-  userId: string,
-  actorRole: UserRole
-): Promise<string[] | 'all'> {
-  if (bypassesMembership(actorRole)) return 'all';
-  const rows = await db
-    .select({ id: workspaceMembers.workspaceId })
-    .from(workspaceMembers)
-    .where(eq(workspaceMembers.userId, userId));
-  return rows.map((r) => r.id);
-}

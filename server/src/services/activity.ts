@@ -96,33 +96,3 @@ export async function listActivitiesForWorkspace(
     .limit(limit);
   return rows.map(toActivity);
 }
-
-/** Combined feed for a user's "recent activity" — board OR task scope. */
-export async function listActivitiesCombined(
-  db: DbClient,
-  filter: { workspaceId?: string; boardId?: string; taskId?: string },
-  limit = 100
-): Promise<Activity[]> {
-  const conds: SQL[] = [];
-  if (filter.workspaceId) conds.push(eq(activities.workspaceId, filter.workspaceId));
-  if (filter.boardId) conds.push(eq(activities.boardId, filter.boardId));
-  if (filter.taskId) conds.push(eq(activities.taskId, filter.taskId));
-  void or;
-
-  if (conds.length === 0) {
-    const rows = await db
-      .select()
-      .from(activities)
-      .orderBy(desc(activities.performedAt))
-      .limit(limit);
-    return rows.map(toActivity);
-  }
-
-  const rows = await db
-    .select()
-    .from(activities)
-    .where(and(...conds))
-    .orderBy(desc(activities.performedAt))
-    .limit(limit);
-  return rows.map(toActivity);
-}

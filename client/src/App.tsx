@@ -7,7 +7,6 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { ThemeProvider } from '@/hooks/useTheme';
 import { AuthProvider } from '@/lib/auth/AuthContext';
 import { RequireAuth } from '@/lib/auth/RequireAuth';
-import { UserRegistryProvider } from '@/lib/users/UserRegistryContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
@@ -31,7 +30,6 @@ const App = () => (
         <BrowserRouter>
           <ErrorBoundary>
           <AuthProvider>
-            <UserRegistryProvider>
               <Routes>
               {/* Public auth routes */}
               <Route path="/login" element={<Login />} />
@@ -61,7 +59,6 @@ const App = () => (
               {/* 404 */}
               <Route path="*" element={<NotFound />} />
               </Routes>
-            </UserRegistryProvider>
           </AuthProvider>
           </ErrorBoundary>
         </BrowserRouter>
